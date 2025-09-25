@@ -1,0 +1,30 @@
+name: Deploy Next.js app
+
+on:
+  push:
+    branches: [ main ]   # run on every push to main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Get your code
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      # 2. Install dependencies
+      - name: Install dependencies
+        run: npm install
+      
+      # 3. Build project
+      - name: Build project
+        run: npm run build
+      
+      # 4. Deploy to Vercel
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}

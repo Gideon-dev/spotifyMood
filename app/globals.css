@@ -1,8 +1,11 @@
-@import "tailwindcss";
+/* @import "tailwindcss"; */
+@import "tailwindcss/preflight";  /* replaces @tailwind base */
+@import "tailwindcss/utilities"; 
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-roboto: 'Roboto', sans-serif;
 }
 
 @theme inline {
@@ -16,11 +19,13 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+  --font-roboto: 'Roboto', sans-serif;
+
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  /* background: var(--background);
+  color: var(--foreground); */
   font-family: Arial, Helvetica, sans-serif;
 }
