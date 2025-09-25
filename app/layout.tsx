@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReactQueryProvider } from "./providers/ReactQueryProvider";
 
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
 
-const roboto = Roboto({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'], // pick the weights you need
-   variable: '--font-roboto'
-})
-
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "SpotifyMood",
-  description: "A Spotify-powered, mood-aware music experience that adapts to how you feel (or want to feel), enhancing listening, wellness, and discovery"
-}
+  description:
+    "A Spotify-powered, mood-aware music experience that adapts to how you feel (or want to feel), enhancing listening, wellness, and discovery",
+};
 
 export default function RootLayout({
   children,
@@ -24,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${roboto.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReactQueryProvider>
           {children}
