@@ -1,5 +1,3 @@
-import React from 'react'
-
 type stylingProps = {
     text: string,
     styling:string

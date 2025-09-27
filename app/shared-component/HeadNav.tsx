@@ -1,10 +1,8 @@
 "use client";
 import { Link } from "react-scroll";
-
-import React from 'react'
 import MoodBtn from "./MoodBtn";
 
-type Props = {}
+
 
 const HeadNav = () => {
     
