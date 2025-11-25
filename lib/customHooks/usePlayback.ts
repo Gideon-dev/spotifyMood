@@ -2,10 +2,9 @@ import { spotify } from "@/app/lib/spotifyClient";
 import { RepeatMode } from "@/components/Player/PlayerContainer";
 import { useSession, signIn } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useCallback, useRef, useEffect } from "react";
+import {  useCallback, useRef, useEffect } from "react";
 import { mapToNormalizedTrack, MinimalPlayback, PlaybackTrack } from "../Playback/types";
 import { RefreshResponse } from "@/app/api/auth/spotify/refresh/route";
-import { playbackActions } from "@/app/store/playbackActions";
 import { usePlaybackStore } from "@/app/store/usePlaybackStore";
 
 /**
@@ -26,13 +25,6 @@ export const usePlayback = () => {
   // Playback state from zustand
   const setFromAPI = usePlaybackStore((s) => s.setFromAPI);
   const setIsPlaying = usePlaybackStore((s) => s.setIsPlaying);
-  const setProgressMs = usePlaybackStore((s) => s.setProgressMs);
-  const setDurationMs = usePlaybackStore((s) => s.setDurationMs);
-  const setShuffle = usePlaybackStore((s) => s.setShuffle);
-  const setRepeatMode = usePlaybackStore((s) => s.setRepeatMode);
-  const setVolume = usePlaybackStore((s) => s.setVolume);
-  const setCurrentTrack = usePlaybackStore((s) => s.setCurrentTrack);
-  const isPlayingSelector = usePlaybackStore.getState;
 
   // Refs for tracking last track and smooth progress interval
   const lastTrackIdRef = useRef<string | null>(null);
@@ -111,13 +103,12 @@ export const usePlayback = () => {
         queryClient.invalidateQueries({ queryKey: ["spotifyPlayback"]}); // immediate refetch
       }
       lastTrackIdRef.current = currentTrackId;
-
       return playback;
     } catch (err) {
       console.error("Playback fetch error:", err);
       return null;
     }
-  }, [refreshTokenIfNeeded, setCurrentTrack, setDurationMs, setFromAPI, setIsPlaying, setProgressMs, setRepeatMode, setShuffle, setVolume, queryClient]);
+  }, [queryClient, refreshTokenIfNeeded, setFromAPI, setIsPlaying]);
 
 
   /**

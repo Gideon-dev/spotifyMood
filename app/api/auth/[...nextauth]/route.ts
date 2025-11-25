@@ -59,7 +59,7 @@ export const authOptions:NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user }) {
       if (!user?.id) return false
 
       const spotifyId = user.id

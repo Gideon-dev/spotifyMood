@@ -182,6 +182,7 @@ export function queueTrackLog(toInsert: MoodSessionTrackType) {
   try {
     if (bc) bc.postMessage({ type: "enqueue", payload: [toInsert] });
   } catch (err) {
+    console.warn(err)
     // ignore bc errors
   }
 
@@ -270,6 +271,7 @@ export async function flushTrackLogs() {
     try {
       if (bc) bc.postMessage({ type: "flushed", payload: { count: toInsert.length, items: toInsert } });
     } catch (err) {
+      console.warn(err)
       // non-fatal
     }
     console.log(`✅ Flushed ${toInsert.length} track logs`);
@@ -304,7 +306,7 @@ if (typeof window !== "undefined") {
 
   // When the page unloads, attempt a final flush
   // We try to flush asynchronously; this may not always complete but helps avoid data loss.
-  window.addEventListener("beforeunload", (ev) => {
+  window.addEventListener("beforeunload", () => {
     // Attempt synchronous best-effort: call flushTrackLogs and hope it completes.
     // Browsers may ignore async work on unload; for the best effort we can use navigator.sendBeacon
     // but since we're using supabase client we simply call flushTrackLogs synchronously.
@@ -314,10 +316,10 @@ if (typeof window !== "undefined") {
 
       // Try navigator.sendBeacon to a lightweight endpoint that could accept queued logs for server-side flush.
       // If you add a server endpoint (optional), you can implement sendBeacon here.
-      // For now we call flushTrackLogs (async). This increases chances that logs are sent during quick unloads.
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // For now we call flushTrackLogs (async). This increases chances that logs are sent during quick unloads. --remmeber typescript-eslint/no-floating-promises eslint check
       flushTrackLogs();
     } catch (err) {
+      console.warn(err)
       // nothing else we can do
     }
   });
@@ -326,7 +328,6 @@ if (typeof window !== "undefined") {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") {
       // attempt flush
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       flushTrackLogs();
     }
   });

@@ -8,11 +8,9 @@
   - Clear separation: UI -> store actions -> playbackService / DB queue
 */
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import { usePlaybackStore } from "@/app/store/usePlaybackStore";
 import {
-  pausePlayback,
-  resumePlayback,
   skipToNext as spotifySkipNext,
   skipToPrevious as spotifySkipPrev,
   seek as spotifySeek,
@@ -36,7 +34,7 @@ const PlayerContainer: React.FC = () => {
   const shuffle = usePlaybackStore((s) => s.shuffle);
   const repeatMode = usePlaybackStore((s) => s.repeatMode);
 
-  const playTrack = usePlaybackStore((s) => s.playTrack);
+
   const togglePlay = usePlaybackStore((s) => s.togglePlay);
   const nextTrack = usePlaybackStore((s) => s.nextTrack);
   const previousTrack = usePlaybackStore((s) => s.previousTrack);
@@ -85,7 +83,7 @@ const PlayerContainer: React.FC = () => {
     } catch (err) {
       console.warn("spotify skip previous failed", err);
     }
-  }, [previousTrack]);
+  }, [previousTrack]); 
 
   // Like / Unlike — optimistic update in store and call Spotify
   const onToggleLike = useCallback(async () => {
@@ -166,6 +164,7 @@ const PlayerContainer: React.FC = () => {
           onSeek={(ms: number) => onSeek(ms)}
           isPlaying={isPlaying}
           onTogglePlay={togglePlay}
+          onSkipPrev={onSkipPrev}
           onSkipNext={onSkipNext}
           shuffle={shuffle}
           setShuffle={(s: boolean) => onSetShuffle(s)}

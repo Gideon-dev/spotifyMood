@@ -1,7 +1,9 @@
 // types/Track.ts
-import { Database } from "@/app/lib/db/types/supabase"
 
-export type SpotifyTrack = SpotifyApi.TrackObjectFull
+import { Database } from "@/app/lib/db/types/supabase";
+
+
+export type SpotifyTrack = SpotifyApi.TrackObjectFull;
 export type MinimalPlayback = Pick<
   SpotifyApi.CurrentPlaybackResponse,
   "is_playing" | "progress_ms" | "item" | "device" | "repeat_state" | "shuffle_state"
@@ -19,6 +21,29 @@ export type NormalizedTrack = MoodSessionTrackType & {
   playable?: boolean
   moodTag?: string
 }
+
+export type SpotifyArtist = {
+  id: string;
+  name: string;
+};
+
+export type SpotifyRecommendationTrack = {
+  id: string;
+  name: string;
+  duration_ms: number;
+  preview_url: string | null;
+  artists: SpotifyArtist[];
+  album: {
+    images: { url: string }[];
+    name: string;
+  };
+};
+export type SpotifyRecommendationsResponse = {
+  tracks: SpotifyRecommendationTrack[];
+};
+
+
+
 /**
  * Normalizes Spotify track data with existing DB mood track data.
  * Ensures that all fields align with the Supabase `mood_tracks` table + computed fields

@@ -1,9 +1,12 @@
 "use client"
+import { Suspense } from "react"
 import { AnimatedPage } from "../shared-component/AnimatedPage"
 import MHeading from "../shared-component/MHeading"
 import SubHeading from "../shared-component/SubHeading"
 import Tagline from "../shared-component/Tagline"
 import { MoodTab } from "./MoodTab"
+
+
 
 export const  MoodHeader = ()=>{
     return(   
@@ -21,7 +24,9 @@ const MoodSection = () => {
     <AnimatedPage>
         <div id="mood" className="px-[24px] py-[64px]">
             <MoodHeader/>
-            <MoodTab/>
+            <Suspense fallback={<p>preparing mood tab...</p>}>
+                <MoodTab/>
+            </Suspense>
         </div>
     </AnimatedPage>
   )

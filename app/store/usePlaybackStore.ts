@@ -3,7 +3,7 @@
 import { create } from "zustand"
 import { persist, subscribeWithSelector } from "zustand/middleware"
 import { createMoodSession, endMoodSession, getActiveSession } from "../lib/db/session"
-import { NormalizedTrack } from "@/lib/Playback/types"
+import { NormalizedTrack, SpotifyRecommendationTrack } from "@/lib/Playback/types"
 import { flushTrackLogs } from "../lib/db/tracks"
 import { handlePlay, pausePlayback, resumePlayback, seek, setRepeat, setShuffle, setVolume, toggleLike } from "@/lib/Playback/playbackService"
 import { RepeatMode } from "@/components/Player/PlayerContainer"
@@ -48,7 +48,7 @@ export type PlaybackState = {
 
   // --- session Actions ---
   restoreSession: () => Promise<void>
-  startSession: (id:string, mood: string, content:{}) => Promise<void>
+  startSession: (id:string, mood: string, content: Record<string, string|number>) => Promise<void>
   endSession: (id:string) => Promise<void>
 
   //playback actions
@@ -218,10 +218,10 @@ export const usePlaybackStore = create<PlaybackState>()(
               
                   if (!data.tracks) return;
               
-                  const normalizedTracks: NormalizedTrack[] = data.tracks.map((t: any) => ({
+                  const normalizedTracks: NormalizedTrack[] = data.tracks.map((t: SpotifyRecommendationTrack) => ({
                     spotify_track_id: t.id,
                     title: t.name,
-                    artist: t.artists.map((a: any) => a.name).join(", "),
+                    artist: t.artists.map((a) => a.name),
                     duration: t.duration_ms,
                   }));
 
@@ -243,7 +243,8 @@ export const usePlaybackStore = create<PlaybackState>()(
               },
 
               togglePlay: async () => {
-                const { isPlaying, currentTrack,startProgressTicker } = get()
+                const { isPlaying, currentTrack,startProgressTicker,stopProgressTicker } = get();
+
                 if (!currentTrack) return
                 if (isPlaying){
                   await pausePlayback();
@@ -251,7 +252,7 @@ export const usePlaybackStore = create<PlaybackState>()(
                 }
                 else {
                   await resumePlayback();
-                  get().stopProgressTicker
+                  stopProgressTicker()
                 }
                 // set({ isPlaying: !isPlaying })
               },

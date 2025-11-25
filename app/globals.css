@@ -37,7 +37,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 
 }
-
+/* 
 @theme inline {
   --color-background: var(--background);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -82,13 +82,13 @@
   --color-sad: '#118AB2', 
   --color-chill: '#06D6A0', 
   --color-focus: '#073B4C'
-}
+} */
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* --background: #0a0a0a; */
-    /* --foreground: #ededed; */
-  }
+    --background: #0a0a0a;
+    --foreground: #ededed;
+   }
 }
 
 
@@ -124,18 +124,4 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-
 }
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-
-
-}
-

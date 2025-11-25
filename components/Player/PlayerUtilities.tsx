@@ -9,14 +9,12 @@ SkipBack,
 Repeat,
 Shuffle,
 Heart,
-Speaker,
 Volume2,
 MonitorSmartphone,
 ClipboardList
 } from "lucide-react";
 import { RepeatMode } from "./PlayerContainer";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { spotify } from "@/app/lib/spotifyClient";
 import { msToTime } from "@/lib/helperFunctions";
 
 
@@ -66,6 +64,7 @@ export function PlayerCenter({
   isPlaying,
   onTogglePlay,
   onSkipNext,
+  onSkipPrev,
   shuffle,
   setShuffle,
   repeatMode,
@@ -77,6 +76,7 @@ export function PlayerCenter({
   isPlaying: boolean;
   onTogglePlay: () => void;
   onSkipNext: () => void;
+  onSkipPrev: () => void;
   shuffle: boolean;
   setShuffle: (v: boolean) => void;
   repeatMode: RepeatMode;
@@ -143,7 +143,7 @@ export function PlayerCenter({
         </button>
       
       
-        <button onClick={() => spotify.skipToPrevious?.()} aria-label="previous" className="p-2 text-[#b3b3b3]">
+        <button onClick={onSkipPrev} aria-label="previous" className="p-2 text-[#b3b3b3]">
           <SkipBack className="w-5 h-5" />
         </button>
       
