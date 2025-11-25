@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import {  Roboto } from "next/font/google";
 import "./globals.css";
 import { ReactQueryProvider } from "./providers/ReactQueryProvider";
+import Providers from "./providers/SessionProvider";
+import { Toaster } from "@/components/ui/sonner";
+import AuthContainer from "@/components/shared-component/AuthContainer";
 
 
 const roboto = Roboto({
@@ -27,9 +30,14 @@ export default function RootLayout({
       <body
         className={`${roboto.className} antialiased`}
       >
-        <ReactQueryProvider>
-          {children}
-        </ReactQueryProvider>
+        <Providers> 
+          <ReactQueryProvider>
+            <AuthContainer> 
+              {children}
+            </AuthContainer>
+          </ReactQueryProvider>
+        </Providers>
+        <Toaster/>
       </body>
     </html>
   );

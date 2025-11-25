@@ -1,6 +1,6 @@
 "use client";
 import { Link } from "react-scroll";
-import MoodBtn from "./MoodBtn";
+import AuthButton from "./AuthButton";
 
 
 
@@ -15,8 +15,8 @@ const HeadNav = () => {
         }}
         className="bg-cover bg-no-repeat w-[13.5px] h-[13.5px] md:hidden"
         />
-        <nav className="hidden md:block">
-            <div>
+        <nav className="hidden md:flex md:items-center md:h-[40px]">
+            <div className="flex items-center justify-center gap-[32px] md:mr-[32px] text-[16px]/[150%]">
                 <Link to="explore" smooth={true} duration={500} offset={-70} className="cursor-pointer hover:text-moodHappy">
                     Explore
                 </Link>
@@ -31,7 +31,7 @@ const HeadNav = () => {
                 </Link>
             </div>
             <div>
-                <MoodBtn text="" styling="" />
+                <AuthButton/>
             </div>
         </nav>
    </nav>

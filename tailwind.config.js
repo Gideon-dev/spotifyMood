@@ -9,15 +9,14 @@ module.exports = {
     extend: {
       fontFamily: { roboto: ['var(--font-roboto)', 'sans-serif'], }, 
       colors: { 
-        moodHappy: '#FFD166',
-        moodSad: '#118AB2', 
-        moodChill: '#06D6A0', 
-        moodFocus: '#073B4C',
-        primaryGreen: '#1DB954',
-        primaryGreenHover: '#1ED760'
+        brand:{
+          DEFAULT: "#1DB954",  // Spotify green
+          dark: "#1AA34A",     // Darker green shade
+          light: "#1ED760",  // lighter green shade
+        }
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }
 
