@@ -1,6 +1,6 @@
 // /app/api/sync-user/route.ts
 
-import { supabase } from "@/app/lib/supabaseClient"
+import { upsertUser } from "@/app/lib/db/users"
 import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
@@ -8,19 +8,7 @@ export async function POST(req: Request) {
 
   const { spotifyId, email, display_name } = body
 
-  const { data } = await supabase
-    .from("users")
-    .upsert(
-      {
-        spotify_id: spotifyId,
-        email,
-        display_name,
-        last_login_at: new Date().toISOString(),
-      },
-      { onConflict: "spotify_id" }
-    )
-    .select("id")
-    .single()
+  const { id } = await upsertUser({id: spotifyId, email, display_name,last_login_at: new Date().toISOString()})
 
-  return NextResponse.json({ internalId: data?.id })
+  return NextResponse.json({ internalId: id })
 }

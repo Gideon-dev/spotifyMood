@@ -5,7 +5,14 @@ import type { JWT } from "next-auth/jwt";
 import SpotifyProvider from "next-auth/providers/spotify"
 import { spotify } from "@/app/lib/spotifyClient";
 import { supabase } from "@/app/lib/supabaseClient";
+import { upsertUser } from "@/app/lib/db/users";
 
+type upsertProps = {
+  id: string
+  email: string
+  display_name: string
+  last_login_at: string
+}
 
 const scopes = [
   "user-read-email",
@@ -65,24 +72,12 @@ export const authOptions:NextAuthOptions = {
       const spotifyId = user.id
       const email = user.email
       const display_name = user.name
+      const last_login_at = new Date().toISOString();
 
-      const { data } = await supabase
-        .from("users")
-        .upsert(
-          {
-            spotify_id: spotifyId,
-            email,
-            display_name,
-            last_login_at: new Date().toISOString(),
-          },
-          { onConflict: "spotify_id" }
-        )
-        .select("id")
-        .single()
+      const { id } = await upsertUser({id: spotifyId, email, display_name, last_login_at})
+      if (!id) return false
 
-      if (!data?.id) return false
-
-      user.internalId = data.id
+      user.internalId = id
       return true
     },
     async jwt({ token, account, user }): Promise<JWT> {

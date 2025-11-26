@@ -1,8 +1,10 @@
 // lib/db/users.ts
-import { supabase } from "../supabaseClient"
+
+import { supabaseServer } from "../supabaseClient";
+
 
 export async function upsertUser(profile: { id: string; email?: string | null; display_name?: string | null; last_login_at?:string }) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from("users")
     .upsert(
       {
@@ -13,7 +15,7 @@ export async function upsertUser(profile: { id: string; email?: string | null; d
       },
       { onConflict: "spotify_id" }
     )
-    .select()
+    .select("id")
     .single()
 
   if (error) throw error
