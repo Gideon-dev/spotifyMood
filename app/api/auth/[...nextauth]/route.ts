@@ -4,15 +4,8 @@ import type { SpotifyProfile } from "next-auth/providers/spotify";
 import type { JWT } from "next-auth/jwt";
 import SpotifyProvider from "next-auth/providers/spotify"
 import { spotify } from "@/app/lib/spotifyClient";
-import { supabase } from "@/app/lib/supabaseClient";
 import { upsertUser } from "@/app/lib/db/users";
 
-type upsertProps = {
-  id: string
-  email: string
-  display_name: string
-  last_login_at: string
-}
 
 const scopes = [
   "user-read-email",
