@@ -1,7 +1,8 @@
 // app/api/recommendations/route.ts
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../auth/[...nextauth]/route"
+import { NextRequest, NextResponse } from "next/server"
+import { getToken } from "next-auth/jwt";
+ 
+
 type SeedParams = {
   seed_genres: string[];
   target_valence: number;
@@ -9,11 +10,11 @@ type SeedParams = {
   [key: string]: string[] | number; 
 };
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const mood = searchParams.get("mood") || "chill"
-  const session = await getServerSession(authOptions)
-  const accessToken = session?.accessToken
+  const token = await getToken({ req });
+  const accessToken = token?.accessToken;  
 
 
   if (!accessToken) {
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
   }
 
   // Map moods to energy/valence values
-  const moodMap:Record<string,SeedParams>  = {
+  const moodMap:Record<string,SeedParams> = {
     happy: { seed_genres: ["pop", "dance"], target_valence: 0.8, target_energy: 0.7 },
     sad: { seed_genres: ["acoustic", "piano"], target_valence: 0.3, target_energy: 0.4 },
     chill: { seed_genres: ["chill", "ambient"], target_valence: 0.5, target_energy: 0.3 },

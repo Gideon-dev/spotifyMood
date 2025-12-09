@@ -8,7 +8,7 @@ import dynamic from "next/dynamic"
 
 const PlayerContainer = dynamic(()=> import("../Player/PlayerContainer"), {
   ssr:false,
-  loading: ()=> <div className="text-black "> loading...</div>
+  loading: () => <div className="text-black "> loading...</div>
 })
 
 const SessionSection = () => {

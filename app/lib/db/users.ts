@@ -1,6 +1,7 @@
 // lib/db/users.ts
 
-import { supabaseServer } from "../supabaseClient";
+import { supabaseServer } from "../supabase/server";
+
 
 
 export async function upsertUser(profile: { id: string; email?: string | null; display_name?: string | null; last_login_at?:string }) {

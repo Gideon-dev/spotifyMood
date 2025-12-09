@@ -2,11 +2,11 @@
 // stores/usePlaybackStore.ts
 import { create } from "zustand"
 import { persist, subscribeWithSelector } from "zustand/middleware"
-import { createMoodSession, endMoodSession, getActiveSession } from "../lib/db/session"
 import { NormalizedTrack, SpotifyRecommendationTrack } from "@/lib/Playback/types"
 import { flushTrackLogs } from "../lib/db/tracks"
 import { handlePlay, pausePlayback, resumePlayback, seek, setRepeat, setShuffle, setVolume, toggleLike } from "@/lib/Playback/playbackService"
 import { RepeatMode } from "@/components/Player/PlayerContainer"
+import { finalizeCurrentLog } from "@/lib/Playback/loggingHelpers"
 
 export type PlaybackState = {
   sessionId?: string
@@ -48,8 +48,8 @@ export type PlaybackState = {
 
   // --- session Actions ---
   restoreSession: () => Promise<void>
-  startSession: (id:string, mood: string, content: Record<string, string|number>) => Promise<void>
-  endSession: (id:string) => Promise<void>
+  startSession: (mood: string, content: Record<string, string|number>) => Promise<void>
+  endSession: () => Promise<void>
 
   //playback actions
   setIsPlaying: (v: boolean) => void
@@ -105,61 +105,103 @@ export const usePlaybackStore = create<PlaybackState>()(
               },
 
               restoreSession: async () => {
-                const { sessionId } = get()
-                if (!sessionId) return
-                const session = await getActiveSession(sessionId);
-
-                if (session?.user_id && session?.started_at) {
+                try {
+                  const res = await fetch("/api/mood-session/active", {
+                    method: "GET",
+                    cache: "no-store",
+                  });
+      
+                  const data = await res.json();
+                  const session = data.session;
+      
+                  if (!session) {
+                    set({ sessionId: undefined, moodMeta: {}, elapsed: 0 });
+                    return;
+                  }
+      
                   set({
-                    sessionId: session.user_id,
+                    sessionId: session.id,
                     moodMeta: { moodType: session.mood },
-                    elapsed: Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000),
-                  })
-        
-                 
-                  console.log("✅ Restored session:",session.user_id)
+                    elapsed: session.started_at
+                    ? Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000)
+                    : 0
+                  });
+      
+                  console.log("🔄 Restored active session:", session.id);
+                } catch (err) {
+                  console.error("Failed to restore session", err);
                 }
               },
         
-              startSession: async (spotifyId, spotifyMood,context={}) => {
-                const { id } = await createMoodSession(spotifyId, spotifyMood,{...context,time: Date.now()})
+              startSession: async ( spotifyMood,context={}) => {
+                  // Clear any existing ticker before starting a new session
+                try {
+                  get().stopProgressTicker?.();
+                } catch (e) {
+                  // defensive: ignore if not present
+                  console.warn(e)
+                }
+                
+                const res = await fetch("/api/mood-session/create", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ mood:spotifyMood, context }),
+                });
+      
+                const data = await res.json();
+      
+                if (!data.session) {
+                  console.error("Could not create session:", data.error);
+                  return;
+                }
+      
+                const newSession = data.session;
+      
                 set({
-                  sessionId: id,
-                  // reset progress/queue for a fresh session
+                  sessionId: newSession.id,
                   queue: [],
                   currentIndex: 0,
                   currentTrack: null,
                   progressMs: 0,
                   durationMs: 0,
+                  moodMeta: { moodType: newSession.mood },
                 });
+      
+                console.log("🆕 Mood session started:", newSession.id);
               },
         
-              endSession: async (id) => {
-                const { sessionId, timer } = get()
-                if (timer) clearInterval(timer)
-                if (!sessionId) return
-                try{
-                  await Promise.all([
-                  flushTrackLogs(),
-                  endMoodSession(id)
-                  ])
-                  
+              endSession: async () => {
+                const { sessionId, timer } = get();
+                if (timer) clearInterval(timer);
+                if (!sessionId) return;
+              
+                // finalize any in-progress log before ending the session
+                try {
+                  await finalizeCurrentLog(true);
+                } catch (err) {
+                  console.warn("endSession finalize failed", err);
+                }
+              
+                try {
+                  const res = await fetch("/api/mood-session/end", { method: "POST" });
+                  const data = await res.json();
+                  // flush logs (fire-and-forget)
+                  flushTrackLogs().catch(() => {});
                   set({
-                    sessionId: undefined, 
+                    sessionId: undefined,
                     currentTrack: null,
-                    isPlaying: false, 
-                    elapsed: 0 ,
+                    isPlaying: false,
+                    elapsed: 0,
                     progressMs: 0,
                     durationMs: 0,
                     shuffle: false,
                     repeatMode: "off",
                     volume: 50,
-                  })
-                  console.log("✅ Session ended & logs flushed")
-                }catch{
-                  console.log("✅ Session ended & logs flushed")
+                  });
+                  console.log(`✅ Session ended ${data.session?.id}, & logs flushed`);
+                } catch (err) {
+                  console.log("✅ Session ended & logs flushed (local fallback)", err);
                 }
-        
               },
 
               // playTrack by index or by track object
@@ -184,6 +226,13 @@ export const usePlaybackStore = create<PlaybackState>()(
                 if (!track) {
                   console.warn("playTrack: no track found at index", index);
                   return;
+                }
+
+                 // finalize any previous in-progress log before switching
+                try {
+                  await finalizeCurrentLog(true);
+                } catch (err) {
+                  console.warn("playTrack finalizeCurrentLog failed", err);
                 }
 
                 // optimistic UI: set current track and playing state
@@ -256,20 +305,38 @@ export const usePlaybackStore = create<PlaybackState>()(
                 }
                 // set({ isPlaying: !isPlaying })
               },
+
               nextTrack: async () => {
-                const { currentIndex, queue } = get()
-                const nextIndex = (currentIndex + 1) % queue.length
-                const track = queue[nextIndex]
-                set({ currentIndex: nextIndex,currentTrack: track })
-                await get().playTrack(track)
+                const { currentIndex, queue } = get();
+                if (queue.length === 0) return;
+                const nextIndex = (currentIndex + 1) % queue.length;
+                const track = queue[nextIndex];
+
+                // finalize current log before switching
+                try {
+                  await finalizeCurrentLog(true);
+                } catch (err) {
+                  console.warn("nextTrack finalize failed", err);
+                }
+
+                set({ currentIndex: nextIndex, currentTrack: track });
+                await get().playTrack(track);
               },
         
               previousTrack: async () => {
-                const { currentIndex, queue } = get()
-                const prevIndex = (currentIndex - 1 + queue.length) % queue.length
-                const track = queue[prevIndex]
-                set({ currentIndex: prevIndex })
-                await get().playTrack(track)
+                const { currentIndex, queue } = get();
+                if (queue.length === 0) return;
+                const prevIndex = (currentIndex - 1 + queue.length) % queue.length;
+                const track = queue[prevIndex];
+
+                try {
+                  await finalizeCurrentLog(true);
+                } catch (err) {
+                  console.warn("previousTrack finalize failed", err);
+                }
+
+                set({ currentIndex: prevIndex, currentTrack: track });
+                await get().playTrack(track);
               },
 
               toggleLike: async () => {

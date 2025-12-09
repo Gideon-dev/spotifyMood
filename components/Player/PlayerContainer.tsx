@@ -57,11 +57,11 @@ const PlayerContainer: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
+
+
   /* ------------------------------
      Handlers (UI -> optimistic store -> side-effect)
      ------------------------------ */
-
-
 
   // Skip next — optimistic: use store's queue logic if present
   const onSkipNext = useCallback(async () => {

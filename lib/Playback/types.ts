@@ -1,6 +1,8 @@
 // types/Track.ts
 
 import { Database } from "@/app/lib/db/types/supabase";
+import { v4 as uuidv4 } from "uuid"; // add uuid dependency
+
 
 
 export type SpotifyTrack = SpotifyApi.TrackObjectFull;
@@ -12,7 +14,10 @@ export type PlaybackTrack = Extract<
   SpotifyApi.CurrentPlaybackResponse["item"],
   SpotifyApi.TrackObjectFull
 >;
+
 export type MoodSessionTrackType = Database["public"]["Tables"]["mood_tracks"]["Row"]
+export type MoodSessionsType = Database["public"]["Tables"]["mood_sessions"]["Row"]
+
 
 export type NormalizedTrack = MoodSessionTrackType & {
   uri?: string
@@ -22,6 +27,34 @@ export type NormalizedTrack = MoodSessionTrackType & {
   moodTag?: string
 }
 
+// Event produced when we finalize a play (client-side, before enqueue)
+export type FinalizedTrackLog = {
+  idempotency_key?: string;
+  session_id: string;           // internal session id (client may have it)
+  spotify_track_id: string;
+  track_name?: string;
+  artist?: string;
+  duration?: number;
+  listened_at: string;          // ISO string - required for dedupe
+  listened_duration: number;    // ms - required
+  skipped: boolean;
+  playback_position?: number | null;
+  // optional enrichment fields
+  album?: string;
+  image_url?: string;
+  preview_url?: string;
+  energy?: number;
+  valence?: number;
+  danceability?: number;
+  liked?: boolean;
+};
+
+// Stored in the queue — idempotency_key required
+export type QueueStoredTrackLog = FinalizedTrackLog & {
+  idempotency_key: string;
+};
+
+ 
 export type SpotifyArtist = {
   id: string;
   name: string;
@@ -83,6 +116,7 @@ export function mapToNormalizedTrack(
     artistNames,
     playable: !!(spotifyTrack.preview_url || dbData?.preview_url),
     moodTag: inferMood(dbData?.valence, dbData?.energy),
+    idempotency_key:  uuidv4()
   }
 }
 
@@ -113,6 +147,7 @@ export function mapToSupabaseInsert(track: NormalizedTrack): MoodSessionTrackTyp
     listened_at: track.listened_at ?? new Date().toISOString(),
     listened_duration: track.listened_duration ?? null,
     playback_position: track.playback_position ?? null,
+    idempotency_key: uuidv4()
   }
 }
 
@@ -129,11 +164,16 @@ function inferMood(valence?: number | null, energy?: number | null): string {
 
 
 
-export interface PlayerControlsProps {
-    isPlaying: boolean
-    liked: boolean
-    onPlay: () => void
-    onPause: () => void
-    onNext: () => void
-    onLike: () => void
+export type FlushedItemsType = {
+  idempotency_key: string;
+}[];
+
+export type FlushedTrackResult={
+  idempotency_key: string;
+  status: string;
+}
+
+export type FlushedTrackResponse ={
+  inserted: number;
+  results: FlushedTrackResult[]
 }

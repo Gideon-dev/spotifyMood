@@ -16,7 +16,7 @@ export default function AuthContainer({ children }: { children: React.ReactNode 
     const email = session.user?.email
     const display_name = session.user?.displayName
 
-    toast("Fixing user sync…")
+    toast("user syncing in progress…")
 
     fetch("/api/sync-user", {
       method: "POST",

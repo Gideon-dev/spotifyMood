@@ -38,7 +38,7 @@ export function MoodTab() {
       setMood(mood)
       if(session?.user?.spotifyId){
         // 1️⃣ Start a new mood session in DB (mood_sessions)
-        await startSession(session.user.spotifyId, mood,{time: Date.now()})
+        await startSession(mood,{time: Date.now()})
         
         
         // 2️⃣ Fetch recommendations & play first track

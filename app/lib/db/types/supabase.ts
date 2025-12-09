@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       mood_sessions: {
@@ -58,11 +83,12 @@ export type Database = {
       mood_tracks: {
         Row: {
           album: string | null
-          artist: string
+          artist: string | null
           danceability: number | null
           duration: number | null
           energy: number | null
           id: string
+          idempotency_key: string | null
           image_url: string | null
           liked: boolean | null
           listened_at: string | null
@@ -72,16 +98,17 @@ export type Database = {
           session_id: string | null
           skipped: boolean | null
           spotify_track_id: string
-          track_name: string
+          track_name: string | null
           valence: number | null
         }
         Insert: {
           album?: string | null
-          artist: string
+          artist?: string | null
           danceability?: number | null
           duration?: number | null
           energy?: number | null
           id?: string
+          idempotency_key?: string | null
           image_url?: string | null
           liked?: boolean | null
           listened_at?: string | null
@@ -91,16 +118,17 @@ export type Database = {
           session_id?: string | null
           skipped?: boolean | null
           spotify_track_id: string
-          track_name: string
+          track_name?: string | null
           valence?: number | null
         }
         Update: {
           album?: string | null
-          artist?: string
+          artist?: string | null
           danceability?: number | null
           duration?: number | null
           energy?: number | null
           id?: string
+          idempotency_key?: string | null
           image_url?: string | null
           liked?: boolean | null
           listened_at?: string | null
@@ -110,7 +138,7 @@ export type Database = {
           session_id?: string | null
           skipped?: boolean | null
           spotify_track_id?: string
-          track_name?: string
+          track_name?: string | null
           valence?: number | null
         }
         Relationships: [
@@ -287,6 +315,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
